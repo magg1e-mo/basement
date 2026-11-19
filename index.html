@@ -105,7 +105,28 @@ body{font-family:var(--font-display);color:var(--red);overflow-x:hidden}
 /* hold every animation until the photos have loaded */
 html:not(.go) .scene,html:not(.go) .scene *{animation-play-state:paused !important}
 
+/* pages slide up inside one fixed scene; logo and nav stay put */
+.scene{overflow:hidden;overflow:clip}
+.page{position:absolute;inset:0;z-index:1;transition:transform 1.15s cubic-bezier(.7,0,.2,1)}
+.personal{transform:translateY(100cqh)}
+.scene.on-personal .home{transform:translateY(-105cqh)}
+.scene.on-personal .personal{transform:translateY(0)}
+.logo-link{position:absolute;z-index:14;left:13.7cqw;top:3.5cqh;height:7.5cqh;display:block}
+.logo-link .logo{position:static;display:block;height:100%;width:auto}
+.nav a{transition:opacity .25s ease,font-weight .2s}
+.nav a.is-on{font-weight:600}
+.pp-photo{position:absolute;left:50%;bottom:-2cqh;height:78cqh;width:auto;translate:-50% 6cqh;opacity:0;transition:translate 1s cubic-bezier(.16,.84,.24,1) .55s,opacity .8s ease .55s;pointer-events:none}
+.pp-side{position:absolute;top:50%;width:25cqw;translate:0 -50%;color:var(--red);font-family:var(--font-display);opacity:0;transition:opacity .8s ease .9s,transform .9s cubic-bezier(.16,.84,.24,1) .9s}
+.pp-left{left:13.7cqw;text-align:left;transform:translateX(-2cqw)}
+.pp-right{right:13.7cqw;text-align:right;transform:translateX(2cqw)}
+.pp-k{font-weight:300;font-size:1.6cqw;letter-spacing:.06em;margin-top:2.6cqw}
+.pp-k:first-child{margin-top:0}
+.pp-v{font-weight:600;font-size:2.6cqw;line-height:1.15;margin-top:.4cqw}
+.scene.on-personal .pp-photo{translate:-50% 0;opacity:1}
+.scene.on-personal .pp-side{opacity:1;transform:none}
+
 @media (prefers-reduced-motion:reduce){
+  .page,.pp-photo,.pp-side{transition-duration:.01s;transition-delay:0s}
   .scene,.me,.fade,.shine,.info .r,.ch,.logo,.nav a,.more{animation:none}
   .shine,.info .gloss{display:none}
   .me,.shine{translate:-21cqw 0}
@@ -122,16 +143,11 @@ html:not(.go) .scene,html:not(.go) .scene *{animation-play-state:paused !importa
     <defs>
     </defs>
   </svg>
+  <div class="page home" id="page-home">
   <img class="p me shade" src="assets/me.png" alt="Maggie เล่นกีตาร์และร้องเพลง">
   <div class="shine" aria-hidden="true"></div>
 
 
-  <img class="logo" src="assets/logo.png" alt="Jittipat Taksawirekaphan">
-  <nav class="nav" aria-label="Main">
-    <a href="#personal-info" style="--i:0">Personal info</a>
-    <a href="#education" style="--i:1">Education</a>
-    <a href="#web-apps" style="--i:2">Web apps</a>
-  </nav>
   <a class="more" href="#personal-info">More info
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>
   </a>
@@ -140,6 +156,27 @@ html:not(.go) .scene,html:not(.go) .scene *{animation-play-state:paused !importa
     <h1 data-type>Jittipat<br>Taksawirekaphan</h1>
     <p class="en" data-type>An English education student.</p>
   </section>
+  </div>
+
+  <div class="page personal" id="page-personal" inert aria-label="Personal info">
+    <img class="pp-photo" src="assets/me.png" alt="">
+    <div class="pp-side pp-left">
+      <p class="pp-k">Studying</p><p class="pp-v">English education</p>
+      <p class="pp-k">Sings</p><p class="pp-v">Silathum</p>
+    </div>
+    <div class="pp-side pp-right">
+      <p class="pp-k">Plays</p><p class="pp-v">Acoustic guitar and vocals</p>
+      <p class="pp-k">Builds</p><p class="pp-v">Small web apps</p>
+    </div>
+  </div>
+
+  <a class="logo-link" href="#home" aria-label="Back to start"><img class="logo" src="assets/logo.png" alt="Jittipat Taksawirekaphan"></a>
+  <nav class="nav" aria-label="Main">
+    <a href="#personal-info" style="--i:0">Personal info</a>
+    <a href="#education" style="--i:1">Education</a>
+    <a href="#web-apps" style="--i:2">Web apps</a>
+  </nav>
+
   <div class="fade"></div>
 
 </div>
@@ -221,6 +258,26 @@ html:not(.go) .scene,html:not(.go) .scene *{animation-play-state:paused !importa
     });
   });
   document.addEventListener("pointerleave",clear);
+})();
+// page changes: slide the whole scene, nothing reloads
+(function(){
+  var scene=document.getElementById("scene"),home=document.getElementById("page-home"),pp=document.getElementById("page-personal");
+  var tabs=[].slice.call(document.querySelectorAll(".nav a"));
+  function show(name){
+    var on=name==="personal";
+    scene.classList.toggle("on-personal",on);
+    if(on){home.setAttribute("inert","");pp.removeAttribute("inert")}else{pp.setAttribute("inert","");home.removeAttribute("inert")}
+    tabs.forEach(function(a){a.classList.toggle("is-on",a.getAttribute("href")==="#personal-info"&&on)});
+    try{history.replaceState(null,"",on?"#personal-info":location.pathname+location.search)}catch(e){}
+  }
+  document.addEventListener("click",function(e){
+    var a=e.target.closest&&e.target.closest("a[href^='#']");
+    if(!a||!scene.contains(a))return;
+    e.preventDefault();
+    var h=a.getAttribute("href");
+    if(h==="#personal-info")show("personal");else if(h==="#home")show("home");
+  });
+  if(location.hash==="#personal-info")show("personal");
 })();
 </script>
 </body>
