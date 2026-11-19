@@ -125,6 +125,16 @@ html:not(.go) .scene,html:not(.go) .scene *{animation-play-state:paused !importa
 .scene.on-personal .pp-photo{translate:-50% 0;opacity:1}
 .scene.on-personal .pp-side{opacity:1;transform:none}
 
+/* personal page: the room goes dark */
+.stage,.scene{transition:background-color 1.15s cubic-bezier(.7,0,.2,1)}
+html.dark .stage,.scene.on-personal{background:#000}
+.nav a{transition:opacity .25s ease,font-weight .2s,color 1.15s ease}
+html.dark .nav a{color:#fff}
+.pp-side{color:#fff}
+.pp-glow{position:absolute;left:50%;top:44%;width:64cqw;height:64cqw;translate:-50% -50%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.2),rgba(255,255,255,.06) 55%,rgba(255,255,255,0));opacity:0;transition:opacity 1.2s ease .6s;pointer-events:none}
+.scene.on-personal .pp-glow{opacity:1}
+.pp-photo{height:100cqh;bottom:-24cqh}
+
 @media (prefers-reduced-motion:reduce){
   .page,.pp-photo,.pp-side{transition-duration:.01s;transition-delay:0s}
   .scene,.me,.fade,.shine,.info .r,.ch,.logo,.nav a,.more{animation:none}
@@ -159,6 +169,7 @@ html:not(.go) .scene,html:not(.go) .scene *{animation-play-state:paused !importa
   </div>
 
   <div class="page personal" id="page-personal" inert aria-label="Personal info">
+    <div class="pp-glow" aria-hidden="true"></div>
     <img class="pp-photo" src="assets/me.png" alt="">
     <div class="pp-side pp-left">
       <p class="pp-k">Studying</p><p class="pp-v">English education</p>
@@ -265,7 +276,7 @@ html:not(.go) .scene,html:not(.go) .scene *{animation-play-state:paused !importa
   var tabs=[].slice.call(document.querySelectorAll(".nav a"));
   function show(name){
     var on=name==="personal";
-    scene.classList.toggle("on-personal",on);
+    scene.classList.toggle("on-personal",on);document.documentElement.classList.toggle("dark",on);
     if(on){home.setAttribute("inert","");pp.removeAttribute("inert")}else{pp.setAttribute("inert","");home.removeAttribute("inert")}
     tabs.forEach(function(a){a.classList.toggle("is-on",a.getAttribute("href")==="#personal-info"&&on)});
     try{history.replaceState(null,"",on?"#personal-info":location.pathname+location.search)}catch(e){}
