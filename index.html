@@ -6,7 +6,7 @@
 <title>Magg1e Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;800&display=swap" rel="stylesheet">
 <style>
 @property --x{syntax:'<number>';inherits:true;initial-value:-20}
 /* FC Vision: licensed webfont. Put the files in assets/ with these names; until then Kanit stands in. */
@@ -28,7 +28,7 @@ body{font-family:var(--font-display);color:var(--red);overflow-x:hidden}
 .stage{position:relative;width:100%;height:100svh;min-height:600px;overflow:hidden;background:#f1e9dc}
 .scene{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:max(100vw,calc(max(100svh,600px) * 16 / 9));aspect-ratio:16/9;container-type:size;
+  width:min(100vw,calc(max(100svh,600px) * 16 / 9));aspect-ratio:16/9;container-type:size;
   background:#f1e9dc;
 }
 .bgsvg{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -102,6 +102,9 @@ body{font-family:var(--font-display);color:var(--red);overflow-x:hidden}
 .more:focus-visible{outline:.15cqw solid var(--red);outline-offset:.3cqw}
 @keyframes moreIn{from{opacity:0}}
 
+/* hold every animation until the photos have loaded */
+html:not(.go) .scene,html:not(.go) .scene *{animation-play-state:paused !important}
+
 @media (prefers-reduced-motion:reduce){
   .scene,.me,.fade,.shine,.info .r,.ch,.logo,.nav a,.more{animation:none}
   .shine,.info .gloss{display:none}
@@ -109,6 +112,7 @@ body{font-family:var(--font-display);color:var(--red);overflow-x:hidden}
   .p{transform:none!important}
 }
 </style>
+<noscript><style>.scene,.scene *{animation-play-state:running !important}</style></noscript>
 </head>
 <body>
 <main class="stage" id="stage" aria-label="หน้าแรก">
@@ -142,6 +146,18 @@ body{font-family:var(--font-display);color:var(--red);overflow-x:hidden}
 </main>
 
 <script>
+// start the intro only once the photos and fonts are ready
+(function(){
+  var go=function(){document.documentElement.classList.add("go")},done=false;
+  function start(){if(done)return;done=true;go()}
+  var imgs=[].slice.call(document.querySelectorAll(".scene img")).map(function(img){
+    return img.decode?img.decode().catch(function(){}):new Promise(function(r){img.complete?r():img.onload=img.onerror=r});
+  });
+  var fonts=document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve();
+  Promise.all(imgs.concat([fonts])).then(start);
+  setTimeout(start,6000);
+})();
+
 // split intro text into letters so they can type in one by one
 (function(){
   var n=0;
